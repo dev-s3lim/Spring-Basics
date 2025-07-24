@@ -2,8 +2,10 @@ package com.beyond.basic.b2_board.author.controller;
 
 import com.beyond.basic.b2_board.author.domain.Author;
 import com.beyond.basic.b2_board.author.dto.*;
+import com.beyond.basic.b2_board.author.repository.AuthorRepository;
 import com.beyond.basic.b2_board.author.service.AuthorService;
-import com.beyond.basic.b2_board.common.JwtTokenProvider;
+import com.beyond.basic.b2_board.common.auth.JwtTokenProvider;
+import com.beyond.basic.b2_board.common.auth.SecurityConfig;
 import com.beyond.basic.b2_board.common.dto.CommonDto;
 import com.beyond.basic.b2_board.common.dto.CommonErrorDto;
 import jakarta.validation.Valid;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +25,7 @@ import java.util.NoSuchElementException;
 public class AuthorController {
     private final AuthorService authorService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthorRepository authorRepository;
 
     // 회원가입
     @PostMapping("/create")
@@ -58,8 +62,12 @@ public class AuthorController {
         }
     }
 
-    // 비밀번호 수정: /author/updatepw email, password -> json
-    // get: 조회, post: 등록, patch: 부분수정, put: 대체, delete: 삭제
+    @GetMapping("/myInfo")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> myInfo() {
+        return new ResponseEntity<>(new CommonDto(authorService.myInfo(), HttpStatus.OK.value(), "마이페이지"), HttpStatus.OK);
+    }
+
     @PatchMapping("/updatepw")
     public ResponseEntity<?> updatePw(@RequestBody AuthorUpdatePwDto authorUpdatePwDto) {
         try {
@@ -73,7 +81,8 @@ public class AuthorController {
     // 회원 탈퇴(삭제): /author/delete/1
     @DeleteMapping("/delete/{id}")
     // ADMIN 권한이 있는지 authentication 객체에서 쉽게 확인
-    @PreAuthorize("hasRole('ADMIN')")
+    // 권한이 없을 경우 filter chain에서 예외가 발생하여 403 에러가 발생
+    @PreAuthorize("hasRole('ADMIN')") // 권한이 있는 사용자만 접근 가능 (or로 다른 권한도 추가 가능)
     public String delete(@PathVariable Long id) {
         authorService.delete(id);
         return "OK";

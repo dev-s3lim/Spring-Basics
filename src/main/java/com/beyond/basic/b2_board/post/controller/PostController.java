@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/post")
 @RequiredArgsConstructor
@@ -27,8 +29,14 @@ public class PostController {
         return new ResponseEntity<>(new CommonDto("ok", HttpStatus.CREATED.value(), "게시물 작성 성공"), HttpStatus.CREATED);
     }
 
+    @GetMapping("/list/all")
+    public ResponseEntity<?> postListAll() {
+        List<PostListDto> postListDtos = postService.findAllNoPaging();
+        return new ResponseEntity<>(new CommonDto(postListDtos, HttpStatus.OK.value(), "ok"), HttpStatus.OK);
+    }
+
     @GetMapping("/list")
-    // 페이징처리를 위한 데이터 요청 형식: 8080/post/list?page=0&size=20&sort=title,asc
+    // 페이징처리를 위한 데이터 요청 형식: 8081/post/list?page=0&size=20&sort=title,asc
     public ResponseEntity<?> postList(@PageableDefault(size=10, sort="id", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<PostListDto> postListDtos = postService.findAll(pageable);
         return new ResponseEntity<>(new CommonDto(postListDtos, HttpStatus.OK.value(), "ok"), HttpStatus.OK);

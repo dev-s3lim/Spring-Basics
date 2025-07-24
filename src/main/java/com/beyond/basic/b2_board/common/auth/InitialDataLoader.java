@@ -1,4 +1,4 @@
-package com.beyond.basic.b2_board.common;
+package com.beyond.basic.b2_board.common.auth;
 
 import com.beyond.basic.b2_board.author.domain.Author;
 import com.beyond.basic.b2_board.author.domain.Role;
@@ -21,6 +21,7 @@ public class InitialDataLoader implements CommandLineRunner {
             return;
         }
         Author author = Author.builder()
+                .name("관리자")
                 .email("admin@naver.com")
                 .role(Role.ADMIN)
                 .password(passwordEncoder.encode("12345678"))

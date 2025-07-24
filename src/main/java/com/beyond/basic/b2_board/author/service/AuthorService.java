@@ -6,6 +6,7 @@ import com.beyond.basic.b2_board.author.repository.AuthorRepository;
 import com.beyond.basic.b2_board.post.domain.Post;
 import com.beyond.basic.b2_board.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -120,13 +121,21 @@ public class AuthorService {
         authorRepository.findByEmail(authorUpdatePwDto.getEmail()).orElseThrow(() -> new NoSuchElementException("존재하지 않는 회원입니다.")).updatePw(authorUpdatePwDto.getPassword());
     }
 
+    // 마이페이지
+    @Transactional(readOnly = true)
+    public AuthorDetailDto myInfo(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Author author = authorRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("존재하지 않는 회원입니다."));
+        return AuthorDetailDto.fromEntity(author);
+    }
+
     public void delete(Long id) throws NoSuchElementException {
         // id 값으로 요소의 index 값을 찾아 삭제
         Author author = authorRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 회원입니다."));
         authorRepository.delete(author);
     }
 
-    public Author doLogin(AuthorLoginDto dto) {
+    public Author doLogin(AuthorLoginDto dto) { // 로그인 시도 ('로그인' 버튼 클릭 시 호출되는 메서드)
         Optional<Author> optionalAuthor = authorRepository.findByEmail(dto.getEmail());
         boolean check = true;
         if (optionalAuthor.isPresent()){

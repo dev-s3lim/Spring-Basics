@@ -36,7 +36,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // Page 객체 안에 List<Post>, 전체 페이지 수 등의 정보도 포함 되어있음
     // Pageable 객체 안에는 페이지 size, 페이지 번호, 정렬 기준 등 포함
     Page<Post> findAll(Pageable pageable);
-    Page<Post> findAllByDelYn(Pageable pageable, String delYn);
+    Page<Post> findAllByDelYnAndAppointment(Pageable pageable, String delYn, String appointment);
 
+    @Query("SELECT p FROM Post p JOIN FETCH p.author WHERE p.delYn = 'N'")
+    List<Post> findAllWithAuthor();
+
+    List<Post> findByAppointment(String appointment);
 }
-

@@ -16,6 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,7 +43,15 @@ public class PostService {
         postRepository.save(dto.toEntity(author));
          */
         Author author = authorRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 ID입니다."));
-        postRepository.save(dto.toEntity(author));
+        LocalDateTime appointmentTime = null;
+        if (dto.getAppointment().equals("Y")){
+            if (dto.getAppointmentTime() == null || dto.getAppointmentTime().isEmpty()) {
+                throw new IllegalArgumentException("시간정보가 비어 있습니다.");
+            }
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+            appointmentTime = LocalDateTime.parse(dto.getAppointmentTime(), dateTimeFormatter);
+        }
+        postRepository.save(dto.toEntity(author, appointmentTime));
     }
 
     public PostDetailDto findById(Long id){
@@ -52,6 +62,13 @@ public class PostService {
 
         /// 엔티티 간 관계성 설정을 하여 Author 객체를 쉽게 조회하는 경우
         return PostDetailDto.fromEntity(post);
+    }
+
+    public List<PostListDto> findAllNoPaging() {
+        List<Post> postList = postRepository.findAllWithAuthor(); // fetch join 포함
+        return postList.stream()
+                .map(PostListDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     public Page<PostListDto> findAll(Pageable pageable){
@@ -80,7 +97,7 @@ public class PostService {
 
         // 페이지 처리 findAll 호출
 //        Page<Post> postList = postRepository.findAll(pageable);
-        Page<Post> postList = postRepository.findAllByDelYn(pageable, "N");
+        Page<Post> postList = postRepository.findAllByDelYnAndAppointment(pageable, "N", "N");
 //        return postList.stream().map(a -> PostListDto.fromEntity(a)).collect(Collectors.toList());
         return postList.map(a -> PostListDto.fromEntity(a));
     }
