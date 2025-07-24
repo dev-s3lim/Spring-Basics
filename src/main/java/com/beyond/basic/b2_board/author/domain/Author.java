@@ -45,6 +45,7 @@ public class Author extends BaseTimeEntity {
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     List<Post> postList = new ArrayList<>();
+    private String profileImageUrl;
 
     @OneToOne (mappedBy = "author", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Address address;

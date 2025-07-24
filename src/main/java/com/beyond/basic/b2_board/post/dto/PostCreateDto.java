@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 
 public class PostCreateDto {
     private String title;
+    private String category;
     private String contents;
     // private Long authorId;
     private String delYn;
@@ -27,6 +28,7 @@ public class PostCreateDto {
     public Post toEntity(Author author, LocalDateTime appointmentTime) {
         return Post.builder()
                 .title(this.title)
+                .category(this.category)
                 .contents(this.contents)
                 .author(author)
                 .appointment(this.appointment)

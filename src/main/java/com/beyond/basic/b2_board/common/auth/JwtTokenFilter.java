@@ -53,6 +53,7 @@ public class JwtTokenFilter extends GenericFilter  {
             // authentication 객체를 만들 때 권한은 ROLE_ 라는 키워드를 붙여서 만들어 주는 것이 추후 문제 발생X
             authorities.add(new SimpleGrantedAuthority("ROLE_" + claims.get("role")));
             Authentication authentication = new UsernamePasswordAuthenticationToken(claims.getSubject(), "", authorities);
+            // payload가 아닌 authentication 객체를 만들어서 SecurityContextHolder에 저장한다.
             SecurityContextHolder.getContext().setAuthentication(authentication);// 다음 필터로 넘어간다.
         } catch (Exception e) {
             log.error(e.getMessage());

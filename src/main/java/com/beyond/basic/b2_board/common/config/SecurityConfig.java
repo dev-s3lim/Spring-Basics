@@ -1,5 +1,8 @@
-package com.beyond.basic.b2_board.common.auth;
+package com.beyond.basic.b2_board.common.config;
 
+import com.beyond.basic.b2_board.common.auth.JwtAuthenticationHandler;
+import com.beyond.basic.b2_board.common.auth.JwtAuthorizationHandler;
+import com.beyond.basic.b2_board.common.auth.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

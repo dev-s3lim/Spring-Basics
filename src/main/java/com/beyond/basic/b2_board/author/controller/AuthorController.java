@@ -5,7 +5,6 @@ import com.beyond.basic.b2_board.author.dto.*;
 import com.beyond.basic.b2_board.author.repository.AuthorRepository;
 import com.beyond.basic.b2_board.author.service.AuthorService;
 import com.beyond.basic.b2_board.common.auth.JwtTokenProvider;
-import com.beyond.basic.b2_board.common.auth.SecurityConfig;
 import com.beyond.basic.b2_board.common.dto.CommonDto;
 import com.beyond.basic.b2_board.common.dto.CommonErrorDto;
 import jakarta.validation.Valid;
@@ -13,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

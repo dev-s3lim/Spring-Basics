@@ -34,8 +34,8 @@ public class JwtTokenProvider {
         String email = author.getEmail();
         String name = author.getName().toString();
         String role = author.getRole().toString();
-        // Claims는 페이로드
-        Claims claims = Jwts.claims().setSubject(email); // 주된 키값으로 사용되는 subject (id 도 사용 가능)
+        // Claims는 페이로드 (payload)
+        Claims claims = Jwts.claims().setSubject(email); // 주된 키값으로 사용되는 subject (id 도 사용 가능) <- 유일한 식별자
         // 주된 키값을 제외한 나머지 사용자 정보는 put 사용하여 key:value 형태로 저장
         claims.put("name", name);
         claims.put("role", role);

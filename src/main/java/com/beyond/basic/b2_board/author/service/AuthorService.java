@@ -67,6 +67,7 @@ public class AuthorService {
 
         Post post = Post.builder()
                 .title("환영합니다!")
+                .category("가입인사")
                 .contents(authorCreateDto.getName() + "님, 회원가입을 축하드립니다!")
                 .author(author)
                 // author 객체가 db에 save 되는 순간, entity manager와 영속성 컨텍스트에 의해 author 객체에도 id값이 할당됨
@@ -80,6 +81,7 @@ public class AuthorService {
         // 이 방식에서도 entity manager가 관리
         author.getPostList().add(post);
         this.authorRepository.save(author); // 여기에 놓아도 작동
+
 
     }
 

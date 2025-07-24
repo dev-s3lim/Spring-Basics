@@ -21,6 +21,7 @@ public class AuthorCreateDto {
     @NotEmpty(message = "비밀번호를 입력해 주세요")
     @Size(min = 8, message = "비밀번호가 너무 짧습니다.")
     private String password;
+    private String profileImageUrl; // 프로필 이미지 URL
     // 문자열로 값이 넘어오면 Role에 값으로 매핑
 
     public Author authorToEntity() {
@@ -30,6 +31,7 @@ public class AuthorCreateDto {
                 .password(this.password)
                 .email(this.email)
                 .role(Role.USER) // 기본값은 USER로 설정
+                .profileImageUrl(this.profileImageUrl)
                 .build();
     }
 }

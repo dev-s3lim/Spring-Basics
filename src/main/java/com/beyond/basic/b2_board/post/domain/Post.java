@@ -21,6 +21,8 @@ public class Post extends BaseTimeEntity {
     private Long id;
     @Column(nullable = false)
     private String title;
+    @Column(nullable = false)
+    private String category; // 카테고리
     @Column(length = 3000)
     private String contents;
     @Builder.Default
@@ -28,7 +30,6 @@ public class Post extends BaseTimeEntity {
     @Builder.Default
     private String appointment = "N"; // 예약 게시글 여부
     private LocalDateTime appointmentTime; // 예약 게시글 시간
-
     // FK 설정 시 ManyToOne과 같은 관계성은 필수
     // ManyToOne에서는 default가 fetch.EAGER(즉시로딩) 설정: author 객체를 사용하지 않아도 author 테이블로 쿼리 발생
     // 일반적으로 LAZY(지연로딩) 설정: author 객체를 사용하지 않는 한 author 객체로 쿼리 발생 X
