@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,7 +29,24 @@ public class AuthorController {
     // 회원가입
     @PostMapping("/create")
     // Dto에 있는 validation 어노테이션과 controller @Valid 한쌍
-    public ResponseEntity<?> save(@Valid @RequestBody AuthorCreateDto authorCreateDto) {
+    /*
+    Postman에서  테스트 시
+    1. Body -> multipart-formdata 선택
+    2. authorCreateDto를 type: Text, key: authorCreateDto, value:
+        {
+            "name":"프로미스나인",
+            "email":"fromis9@naver.com",
+            "password": "987654321!"
+        }
+        이후, content-type: application/json로 설정
+    3. profileImage -> type: File, key: profileImage, value: { 파일 선택 }
+        content-type: multipart/form-data로 설정
+     */
+    public ResponseEntity<?> save(@RequestPart(name = "authorCreateDto") @Valid AuthorCreateDto authorCreateDto,
+                                  @RequestPart(name = "profileImage") MultipartFile profileImage) {
+        // 이미지 2개 이상일때 :
+        // @RequestPart(name = "profileImage") List<MultipartFile> profileImages
+        System.out.println(profileImage.getOriginalFilename());
 //        try {
 //            this.authorService.save(authorCreateDto);
 //            return new ResponseEntity<>("OK", HttpStatus.CREATED);
@@ -38,7 +56,7 @@ public class AuthorController {
 //            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 //        }
         // ControllerAdvice가 없었으면 위와 같이 개별적인 예외처리가 필요하나 이제는 전역적인 예외처리가 가능
-        this.authorService.save(authorCreateDto);
+        this.authorService.save(authorCreateDto, profileImage);
         return new ResponseEntity<>("OK", HttpStatus.CREATED);
     }
 

@@ -6,11 +6,18 @@ import com.beyond.basic.b2_board.author.repository.AuthorRepository;
 import com.beyond.basic.b2_board.post.domain.Post;
 import com.beyond.basic.b2_board.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectAclRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -44,8 +51,12 @@ public class AuthorService {
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder; // 비밀번호 암호화를 위한 PasswordEncoder
 
+    private final S3Client s3Client; // S3 클라이언트
+    @Value("${cloud.aws.s3.bucket}") // S3 버킷 이름을 프로퍼티 파일에서 읽어옴
+    private String bucket;
+
     // 객체 조립은 서비스 담당
-    public void save(AuthorCreateDto authorCreateDto) {
+    public void save(AuthorCreateDto authorCreateDto, MultipartFile profileImage) {
         // 이메일 중복검증
         // this.autorRepository.save("..."); // DI 방법 1.
         // 비밀번호 길이 검증
@@ -61,10 +72,16 @@ public class AuthorService {
         Author author = authorCreateDto.authorToEntity();
         // this.authorRepository.save(author);
 
+        // Author 회원 가입 : save 작업 -> id값 추출
+        // user-1-profileimage로 이미지 파일명 설정
+        // s3에 업로드 작업 및 url 리턴
+        // url을 author 객체에 update
+
         //cascading 테스트 -> 회원이 생성될 때, 곧바로 가입 인사 글을 생성하는 상황
         // 2가지 방법 존재:
         // 1) 직접 Post 객체를 생성하여 Author에 추가
 
+        /*
         Post post = Post.builder()
                 .title("환영합니다!")
                 .category("가입인사")
@@ -74,15 +91,40 @@ public class AuthorService {
                 // 영속성 컨텍스트 내부의 상태 변화만 추적하고, 트랜잭션 종료 시점에 한 번에 DB에 flush (동기화)
                 .build();
 
+         */
+
         // postRepository.save(post);
 
         // 2) Cascade 옵션 활용 **이걸 사용할 예정**  (junction 테이블이 있을 때 이걸 사용)
         // 부모가 저장(생성)될 때, 자식도 함께 저장 (생성)
         // 이 방식에서도 entity manager가 관리
-        author.getPostList().add(post);
+        // author.getPostList().add(post);
         this.authorRepository.save(author); // 여기에 놓아도 작동
 
+        // image명 설정
+        String fileName = "user-" + author.getId() + "-profileimage-" + profileImage.getOriginalFilename();
 
+        // 저장 객체 구성
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileName)
+                .contentType(profileImage.getContentType())
+                .build();
+
+        // S3에 이미지 업로드
+        // checked를 unchecked로 변환하여 전체 rollback 되도록 예외 처리
+        try {
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(profileImage.getBytes()));
+        }
+        catch (IOException e) {
+            throw new IllegalArgumentException("프로필 이미지 업로드 중 오류가 발생했습니다.", e);
+        }
+
+        // S3에 업로드된 이미지 URL 생성
+        String imgUrl = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toString();
+
+        // 이미지 url 추출
+        author.updateImageUrl(imgUrl);
     }
 
     // 트랜잭션이 필요없는 경우 아래와 같이 명시적으로 제외
